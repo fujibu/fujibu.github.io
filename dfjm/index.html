@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>D F J 战局编辑 -by:LJ</title>
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				background-color: #80dcff;
+			}
+			#canvas{
+				width: 900px;
+				height: 900px;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform:translate(-50%,-50%);
+			}
+		</style>
+    <script>
+			var _hmt = _hmt || [];
+			(function() {
+			  var hm = document.createElement("script");
+			  hm.src = "https://hm.baidu.com/hm.js?8af80832d17481172ef08e883aa888a1";
+			  var s = document.getElementsByTagName("script")[0]; 
+			  s.parentNode.insertBefore(hm, s);
+			})();
+		</script>
+	</head>
+	<body>
+		<canvas id="canvas">
+			浏览器不支持...
+		</canvas>
+		<script type="text/javascript">
+			var canvas = document.getElementById("canvas")
+			var ctx = canvas.getContext("2d")
+			canvasStyle = window.getComputedStyle(canvas, null)
+			var size = 10//设置棋盘边长为10格
+			canvas.width = canvas.height = parseInt(canvasStyle["width"])
+			var blocksize = canvas.width / size //根据格子的数量计算出单个格子的边长
+			var pln_count = 2//飞机数
+			var plane_originA = []//头位置,朝向(0上1右2下3左)
+			var plane_originB = []
+			var code = ""//战局代码
+			var plane = []//棋盘:1空 2机身 3机头
+			var step = 0//步骤
+			
+			function newgame(){
+				step = 0
+				plane = []
+				plane_originA = []
+				plane_originB = []
+				
+				for (var i = 0; i < size * size; i++) {//初始化棋盘
+					plane.push(1)
+				}
+				draw()
+			}
+			
+			function makeCode() {
+				code_org = ""
+				if (plane_originA[0] < 10){
+					code_org = code_org + "0" + plane_originA[0].toString()
+				}else {
+					code_org = code_org + plane_originA[0].toString()
+				}
+				code_org = code_org + plane_originA[1].toString()
+				if (plane_originB[0] < 10){
+					code_org = code_org + "0" + plane_originB[0].toString()
+				}else {
+					code_org = code_org + plane_originB[0].toString()
+				}
+				code_org = code_org + plane_originB[1].toString()
+				
+				code_org = parseInt(code_org) * 3
+				code_org = code_org.toString()
+				return code_org
+			}
+			
+			function draw() {  //绘制棋盘
+			    for (var i = 0; i < plane.length; i++) { //遍历所有的格子
+			        block = plane[i]
+					if (block == 1){//根据格子状态设置填充颜色
+			            ctx.fillStyle = "#1fab89"
+			        }
+					else if (block == 2){
+					    ctx.fillStyle = "#ee2b47"
+					}
+					else if (block == 3){
+						ctx.fillStyle = "#590d82"
+					}
+			        ctx.beginPath() //绘制圆形的棋子
+			        ctx.arc((i % size)*blocksize+blocksize/2,parseInt(i/size)*blocksize+blocksize/2,blocksize/2.4,0,Math.PI*2,false)
+			        ctx.strokeStyle = '#80dcff'
+					ctx.fill()
+					ctx.stroke()
+				}
+			}
+			
+			function planeOk(){
+				console.log(plane_originA,plane_originB)
+				//第一架飞机
+				
+				pln_head_x = plane_originA[0] % 10//筛选跨行飞机
+				pln_head_fwd = plane_originA[1]
+				
+				if (pln_head_x < 3){
+					if (pln_head_fwd == 1 || (pln_head_x < 2 && pln_head_fwd != 3)){
+						return false
+					}
+				}else if (pln_head_x > 6){
+					if (pln_head_fwd == 3 || (pln_head_x > 7 && pln_head_fwd != 1)){
+						return false
+					}
+				}
+				
+				plnA = make(plane_originA)
+				
+				for (var i = 0; i < 10; i++){//判断是否合法
+					blk = plnA[i]
+					if (blk < 0 || blk >= 100){//出界
+						return false
+					}
+					plane[blk] = 2
+				}			
+				
+				//第二架飞机
+				
+				pln_head_x = plane_originB[0] % 10//筛选跨行飞机
+				pln_head_fwd = plane_originB[1]
+				
+				if (pln_head_x < 3){
+					if (pln_head_fwd == 1 || (pln_head_x < 2 && pln_head_fwd != 3)){
+						return false
+					}
+				}else if (pln_head_x > 6){
+					if (pln_head_fwd == 3 || (pln_head_x > 7 && pln_head_fwd != 1)){
+						return false
+					}
+				}
+				
+				plnB = make(plane_originB)
+				for (var i = 0; i < 10; i++){//判断是否合法
+					blk = plnB[i]
+					if (blk < 0 || blk >= 100){//出界
+						return false
+					}
+					plane[blk] = 2
+				}
+				
+				return true
+			}
+			
+			function make(origin){
+				org = origin
+				var plane_body = [0,0,0,0,0,0,0,0,0,0]
+				if (org[1] == 0){//朝上
+					plane_body[0] = org[0]
+					plane_body[1] = org[0]+10-2
+					plane_body[2] = org[0]+10-1
+					plane_body[3] = org[0]+10
+					plane_body[4] = org[0]+10+1
+					plane_body[5] = org[0]+10+2
+					plane_body[6] = org[0]+20
+					plane_body[7] = org[0]+30-1
+					plane_body[8] = org[0]+30
+					plane_body[9] = org[0]+30+1
+				}else if (org[1] == 1){//朝右
+					plane_body[0] = org[0]
+					plane_body[1] = org[0]-1-20
+					plane_body[2] = org[0]-1-10
+					plane_body[3] = org[0]-1
+					plane_body[4] = org[0]-1+10
+					plane_body[5] = org[0]-1+20
+					plane_body[6] = org[0]-2
+					plane_body[7] = org[0]-3-10
+					plane_body[8] = org[0]-3
+					plane_body[9] = org[0]-3+10
+				}else if (org[1] == 2){//朝下
+					plane_body[0] = org[0]
+					plane_body[1] = org[0]-10-2
+					plane_body[2] = org[0]-10-1
+					plane_body[3] = org[0]-10
+					plane_body[4] = org[0]-10+1
+					plane_body[5] = org[0]-10+2
+					plane_body[6] = org[0]-20
+					plane_body[7] = org[0]-30-1
+					plane_body[8] = org[0]-30
+					plane_body[9] = org[0]-30+1
+				}else if (org[1] == 3){//朝左
+					plane_body[0] = org[0]
+					plane_body[1] = org[0]+1-20
+					plane_body[2] = org[0]+1-10
+					plane_body[3] = org[0]+1
+					plane_body[4] = org[0]+1+10
+					plane_body[5] = org[0]+1+20
+					plane_body[6] = org[0]+2
+					plane_body[7] = org[0]+3-10
+					plane_body[8] = org[0]+3
+					plane_body[9] = org[0]+3+10
+				}
+				return plane_body
+			}
+			
+			newgame()
+			
+			canvas.addEventListener("click", function (evt) { //点击事件
+			    var cRect = canvas.getBoundingClientRect() //获取画布的尺寸位置属性
+			    var canvasX = Math.round(evt.clientX - cRect.left) //根据画布的页边距计算鼠标在画布内的坐标位置
+			    var canvasY = Math.round(evt.clientY - cRect.top)
+			    var x = parseInt(canvasX / blocksize) //计算当前点击的格子行列坐标
+			    var y = parseInt(canvasY / blocksize)
+			    var origin = y * size + x //计算当前棋子在数组中的索引
+				
+				//-----------------------
+				if (origin > 1 && origin < 98 && origin !=08 && origin !=09 && origin !=10 && origin !=11 && origin !=18 && origin !=19 && origin !=80 && origin !=81 && origin !=88 && origin != 89&& origin !=90 && origin !=91){
+					if (step == 0){
+						plane_originA[0] = origin
+						plane[origin] = 3
+						plane_originA[1] = parseInt(prompt("飞机方向,0上1右2下3左","0"))
+						for (var i = 0; i < 10; i++){
+							blk = make(plane_originA)[i]
+							plane[blk] = 2
+						}
+						step++
+						draw()
+					}else if (step == 1){
+						plane_originB[0] = origin
+						plane[origin] = 3
+						plane_originB[1] = parseInt(prompt("飞机方向,0上1右2下3左","0"))
+						for (var i = 0; i < 10; i++){
+							blk = make(plane_originB)[i]
+							plane[blk] = 2
+						}
+						draw()
+						if (planeOk()){
+							draw()
+							setTimeout(function () { //延迟1秒等待棋盘绘制完成
+								if (confirm("战局代码 dfj-" + makeCode() + "\n是否前往战局(否则重绘)")){
+									//前往战局
+								}else {
+									newgame()
+								}
+							}, 1000);
+						}else {
+							alert("战局不合法")
+							newgame()
+						}
+					}
+				}
+			})
+		</script>
+	</body>
+</html>
