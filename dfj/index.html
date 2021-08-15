@@ -45,13 +45,130 @@
 			var plane = []//暗棋盘:1打空 2机身 3机头
 			var step = 0//步数记录
 			var pln_count = 2//飞机数
-			var plane_originA = [20,3]//头位置,朝向(0上1右2下3左)
-			var plane_originB = [46,0]
+			var plane_originA = []//头位置,朝向(0上1右2下3左)
+			var plane_originB = []
+			var code = ""//战局代码
 			
-						function newgame() { //根据棋盘尺寸初始化
-				blocks = []
+			function newgame() { //根据棋盘尺寸初始化
+				while (true){
+					
+					blocks = []
+					plane = []
+					code = ""
+					step = 0
+					pln_count = 2
+					
+					if (confirm("是否输入战局代码?(否则随机生成战局)")){
+						code = prompt("请输入战局代码","")
+						if (code_plane(code) && code.length > 8){
+							break
+						}else {
+							alert("战局代码不合法")
+						}
+					}else{
+						radom_plane()
+						break
+					}
+				}
+				
+				for (var i = 0; i < size * size; i++) {//初始化明棋盘
+					blocks.push(0)
+				}
+				draw()
+			}
+			
+			function makeCode() {
+				code_org = ""
+				if (plane_originA[0] < 10){
+					code_org = code_org + "0" + plane_originA[0].toString()
+				}else {
+					code_org = code_org + plane_originA[0].toString()
+				}
+				code_org = code_org + plane_originA[1].toString()
+				if (plane_originB[0] < 10){
+					code_org = code_org + "0" + plane_originB[0].toString()
+				}else {
+					code_org = code_org + plane_originB[0].toString()
+				}
+				code_org = code_org + plane_originB[1].toString()
+				
+				code_org = parseInt(code_org) * 3
+				code_org = code_org.toString()
+				return code_org
+			}
+			
+			function code_plane(code){
+				if (code.substring(0,3) != "dfj"){
+					return false
+				}
+				
+				code = parseInt(code.substring(4))
+				code = code / 3
+				code = code.toString()
+				
 				plane = []
+				for (var i = 0; i < size * size; i++) {//初始化暗棋盘
+					plane.push(1)
+				}
+				
+				plane_originA = [parseInt(code.substring(0,2)), parseInt(code.substring(2,3))]//第一架飞机
+				plane_originB = [parseInt(code.substring(3,5)), parseInt(code.substring(5,6))]//第二架飞机
+				
+				//第一架飞机
+				
+				pln_head_x = plane_originA[0] % 10//筛选跨行飞机
+				pln_head_fwd = plane_originA[1]
+				
+				if (pln_head_x < 3){
+					if (pln_head_fwd == 1 || (pln_head_x < 2 && pln_head_fwd != 3)){
+						return false
+					}
+				}else if (pln_head_x > 6){
+					if (pln_head_fwd == 3 || (pln_head_x > 7 && pln_head_fwd != 1)){
+						return false
+					}
+				}
+				
+				plnA = make(plane_originA)
+				
+				for (var i = 0; i < 10; i++){//判断是否合法
+					blk = plnA[i]
+					if (blk < 0 || blk >= 100){//出界
+						return false
+					}
+					plane[blk] = 2
+				}
+				plane[plane_originA[0]] = 3				
+				
+				//第二架飞机
+				
+				pln_head_x = plane_originB[0] % 10//筛选跨行飞机
+				pln_head_fwd = plane_originB[1]
+				
+				if (pln_head_x < 3){
+					if (pln_head_fwd == 1 || (pln_head_x < 2 && pln_head_fwd != 3)){
+						return false
+					}
+				}else if (pln_head_x > 6){
+					if (pln_head_fwd == 3 || (pln_head_x > 7 && pln_head_fwd != 1)){
+						return false
+					}
+				}
+				
+				plnB = make(plane_originB)
+				for (var i = 0; i < 10; i++){//判断是否合法
+					blk = plnB[i]
+					if (blk < 0 || blk >= 100 || plane[blk] > 1){//出界
+						return false
+					}
+					plane[blk] = 2
+				}
+				plane[plane_originB[0]] = 3
+				
+				return true
+			}
 			
+			function radom_plane(){
 				while (true){//生成两架飞机
 					
 					plane = []
@@ -86,7 +203,7 @@
 						plane[blk] = 2
 					}
 					plane[plane_originA[0]] = 3
-
+				
 					if (ok == 0){
 						continue
 					}
@@ -118,17 +235,10 @@
 					
 					if (ok == 1){
 						break
-					}					
+					}
 				}
-				
-				step = 0
-				pln_count = 2
-				
-				for (var i = 0; i < size * size; i++) {//初始化明棋盘
-					blocks.push(0)
-				}
-				draw()
 			}
+			
 			function draw() {  //绘制棋盘
 			    for (var i = 0; i < blocks.length; i++) { //遍历所有的格子
 			        block = blocks[i] 
@@ -153,8 +263,6 @@
 			}
 			function make(origin){
 				org = origin
-				//var x = org[0] % 10
-				//var y = parseInt(org[0] / 10)
 				var plane_body = [0,0,0,0,0,0,0,0,0,0]
 				if (org[1] == 0){//朝上
 					plane_body[0] = org[0]
@@ -229,7 +337,7 @@
 						if (pln_count <= 0){
 							draw()
 							setTimeout(function () { //延迟0.5秒等待棋盘绘制完成
-							    alert("游戏结束.你用了" + step + "步.")
+							    alert("战局代码 dfj-" + makeCode() + "\n你用了" + step + "步.")
 							    newgame() //点击确认弹出框后重新开始游戏
 							}, 500);
 						}
