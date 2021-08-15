@@ -48,7 +48,7 @@
 			var plane_originA = [20,3]//头位置,朝向(0上1右2下3左)
 			var plane_originB = [46,0]
 			
-			function newgame() { //根据棋盘尺寸初始化
+						function newgame() { //根据棋盘尺寸初始化
 				blocks = []
 				plane = []
 			
@@ -62,7 +62,22 @@
 					ok = 1
 					
 					plane_originA = [Math.floor(Math.random() * 100), Math.floor(Math.random() * 100) % 4]//第一架飞机
+					
+					pln_head_x = plane_originA[0] % 10//筛选跨行飞机
+					pln_head_fwd = plane_originA[1]
+					
+					if (pln_head_x < 3){
+						if (pln_head_fwd == 1 || (pln_head_x < 2 && pln_head_fwd != 3)){
+							continue
+						}
+					}else if (pln_head_x > 6){
+						if (pln_head_fwd == 3 || (pln_head_x > 7 && pln_head_fwd != 1)){
+							continue
+						}
+					}
+					
 					plnA = make(plane_originA)
+					
 					for (var i = 0; i < 10; i++){//判断是否合法
 						blk = plnA[i]
 						if (blk < 0 || blk >= 100){//出界
@@ -77,6 +92,20 @@
 					}
 					
 					plane_originB = [Math.floor(Math.random() * 100), Math.floor(Math.random() * 100) % 4]//第二架飞机
+					
+					pln_head_x = plane_originB[0] % 10//筛选跨行飞机
+					pln_head_fwd = plane_originB[1]
+					
+					if (pln_head_x < 3){
+						if (pln_head_fwd == 1 || (pln_head_x < 2 && pln_head_fwd != 3)){
+							continue
+						}
+					}else if (pln_head_x > 6){
+						if (pln_head_fwd == 3 || (pln_head_x > 7 && pln_head_fwd != 1)){
+							continue
+						}
+					}
+					
 					plnB = make(plane_originB)
 					for (var i = 0; i < 10; i++){//判断是否合法
 						blk = plnB[i]
