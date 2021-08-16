@@ -102,7 +102,7 @@
 					return false
 				}
 				
-				code = parseInt(code.substring(4))
+				code = parseInt(code.substring(3))
 				code = code / 3
 				code = code.toString()
 				
@@ -337,7 +337,7 @@
 						if (pln_count <= 0){
 							draw()
 							setTimeout(function () { //延迟0.5秒等待棋盘绘制完成
-							    alert("战局代码 dfj-" + makeCode() + "\n你用了" + step + "步.")
+							    alert("战局代码 dfj" + makeCode() + "\n你用了" + step + "步.")
 							    newgame() //点击确认弹出框后重新开始游戏
 							}, 500);
 						}
