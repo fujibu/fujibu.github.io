@@ -341,7 +341,7 @@ function shareText(score) {
         return '倒计时多了' + ((deviation_time / 1000) - 20).toFixed(2) + "s";
     }
     SubmitResults();
-    if (score <= 150) return '渣子';
+    if (score <= 70) return '渣子';
     return '打败○○,走向成功!';
 }
 
